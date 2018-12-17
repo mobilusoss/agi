@@ -87,8 +87,13 @@ func (r *Response) Val() (string, error) {
 	return r.Value, r.Error
 }
 
+// ResStr returns the response string and error
+func (r *Response) ResStr() (string, error) {
+	return r.ResultString, r.Error
+}
+
 // Regex for AGI response result code and value
-var responseRegex = regexp.MustCompile(`^([\d]{3})\sresult=(\-?[[:alnum:]]*)(\s.*)?$`)
+var responseRegex = regexp.MustCompile(`^([\d]{3})\sresult=(\-?[[:alnum:]*#]*)(\s.*)?$`)
 
 const (
 	// StatusOK indicates the AGI command was
@@ -233,11 +238,15 @@ func (a *AGI) Command(cmd ...string) (resp *Response) {
 
 		// Result code is the second substring
 		resp.ResultString = pieces[2]
-		resp.Result, err = strconv.Atoi(pieces[2])
-		if err != nil {
-			resp.Error = errors.Wrap(err, "failed to parse status code as an integer")
-			return
+		// FIXME: DTMF result maybe has "#"(35), "*" or ""(GetData #). But not perfect to just judge by contains string.
+		if resp.ResultString != "" && !strings.Contains(resp.ResultString, "35") && !strings.Contains(resp.ResultString, "*") {
+			resp.Result, err = strconv.Atoi(pieces[2])
+			if err != nil {
+				resp.Error = errors.Wrap(err, "failed to parse status code as an integer")
+				return
+			}
 		}
+
 
 		// Value is the third (and optional) substring
 		wrappedVal := strings.TrimSpace(pieces[3])
@@ -285,7 +294,7 @@ func (a *AGI) Get(key string) (string, error) {
 
 // GetData plays a file and receives DTMF, returning the received digits
 func (a *AGI) GetData(name string, timeout int, maxdigits int) (digit string, err error) {
-	return a.Command("GET DATA", name, strconv.Itoa(timeout), strconv.Itoa(maxdigits)).Val()
+	return a.Command("GET DATA", name, strconv.Itoa(timeout), strconv.Itoa(maxdigits)).ResStr()
 }
 
 // Hangup terminates the call
