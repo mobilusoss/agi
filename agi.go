@@ -92,6 +92,20 @@ func (r *Response) ResStr() (string, error) {
 	return r.ResultString, r.Error
 }
 
+// ResAsciiStr returns the response string which converted from ascii code and error
+func (r *Response) ResAsciiStr() (string, error) {
+	result := ""
+	err := r.Error
+
+	if err != nil || r.ResultString == "" || r.ResultString == "0" {
+		return result, err
+	}
+
+	var ascii int
+	ascii, err = strconv.Atoi(r.ResultString)
+	return string(ascii), r.Error
+}
+
 // Regex for AGI response result code and value
 var responseRegex = regexp.MustCompile(`^([\d]{3})\sresult=(\-?[[:alnum:]*#]*)(\s.*)?$`)
 
@@ -412,7 +426,7 @@ func (a *AGI) Set(key, val string) error {
 
 // StreamFile plays the given file to the channel
 func (a *AGI) StreamFile(name string, escapeDigits string, offset int) (digit string, err error) {
-	return a.Command("STREAM FILE", name, escapeDigits, strconv.Itoa(offset)).Val()
+	return a.Command("STREAM FILE", name, escapeDigits, strconv.Itoa(offset)).ResAsciiStr()
 }
 
 // Verbose logs the given message to the verbose message system
