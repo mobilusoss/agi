@@ -429,6 +429,10 @@ func (a *AGI) StreamFile(name string, escapeDigits string, offset int) (digit st
 	return a.Command("STREAM FILE", name, escapeDigits, strconv.Itoa(offset)).ResAsciiStr()
 }
 
+func (a *AGI) ControlStreamFile(name string, escapeDigits string, skipms int, ffchar string, rewchr string,  pausechr string, offsetms int) (digit string, err error){
+	return a.Command("CONTROL STREAM FILE", name, escapeDigits, strconv.Itoa(skipms), ffchar, rewchr, pausechr, strconv.Itoa(offsetms)).ResAsciiStr()
+}	
+
 // Verbose logs the given message to the verbose message system
 func (a *AGI) Verbose(msg string, level int) error {
 	return a.Command("VERBOSE", msg, strconv.Itoa(level)).Err()
