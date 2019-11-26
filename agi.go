@@ -92,6 +92,10 @@ func (r *Response) ResStr() (string, error) {
 	return r.ResultString, r.Error
 }
 
+func (r *Response) ResStrAll() (int, int, string, string, error)  {
+	return r.Status, r.Result, r.ResultString, r.Value, r.Error
+}
+
 // ResAsciiStr returns the response string which converted from ascii code and error
 func (r *Response) ResAsciiStr() (string, error) {
 	result := ""
@@ -309,6 +313,11 @@ func (a *AGI) Get(key string) (string, error) {
 // GetData plays a file and receives DTMF, returning the received digits
 func (a *AGI) GetData(name string, timeout int, maxdigits int) (digit string, err error) {
 	return a.Command("GET DATA", name, strconv.Itoa(timeout), strconv.Itoa(maxdigits)).ResStr()
+}
+
+// GetData plays a file and receives DTMF, returning the status, result, digit string, value and error
+func (a *AGI) GetAllData(name string, timeout int, maxdigits int) (status int, result int, digit string, value string, err error) {
+	return a.Command("GET DATA", name, strconv.Itoa(timeout), strconv.Itoa(maxdigits)).ResStrAll()
 }
 
 // Hangup terminates the call
