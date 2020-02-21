@@ -92,6 +92,10 @@ func (r *Response) ResStr() (string, error) {
 	return r.ResultString, r.Error
 }
 
+func (r *Response) ResStrAll() (int, int, string, string, error)  {
+	return r.Status, r.Result, r.ResultString, r.Value, r.Error
+}
+
 // ResAsciiStr returns the response string which converted from ascii code and error
 func (r *Response) ResAsciiStr() (string, error) {
 	result := ""
@@ -311,6 +315,11 @@ func (a *AGI) GetData(name string, timeout int, maxdigits int) (digit string, er
 	return a.Command("GET DATA", name, strconv.Itoa(timeout), strconv.Itoa(maxdigits)).ResStr()
 }
 
+// GetData plays a file and receives DTMF, returning the status, result, digit string, value and error
+func (a *AGI) GetAllData(name string, timeout int, maxdigits int) (status int, result int, digit string, value string, err error) {
+	return a.Command("GET DATA", name, strconv.Itoa(timeout), strconv.Itoa(maxdigits)).ResStrAll()
+}
+
 // Hangup terminates the call
 func (a *AGI) Hangup() error {
 	return a.Command("HANGUP").Err()
@@ -428,6 +437,10 @@ func (a *AGI) Set(key, val string) error {
 func (a *AGI) StreamFile(name string, escapeDigits string, offset int) (digit string, err error) {
 	return a.Command("STREAM FILE", name, escapeDigits, strconv.Itoa(offset)).ResAsciiStr()
 }
+
+func (a *AGI) ControlStreamFile(name string, escapeDigits string, skipms int, ffchar string, rewchr string,  pausechr string, offsetms int) (digit string, err error){
+	return a.Command("CONTROL STREAM FILE", name, escapeDigits, strconv.Itoa(skipms), ffchar, rewchr, pausechr, strconv.Itoa(offsetms)).ResAsciiStr()
+}	
 
 // Verbose logs the given message to the verbose message system
 func (a *AGI) Verbose(msg string, level int) error {
